@@ -1,0 +1,13 @@
+services:
+  snippet-searcher-ui:
+    container_name: snippet-searcher-ui
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${VITE_SERVER_PORT}:${VITE_SERVER_PORT}"
+    environment:
+      VITE_SERVER_PORT: ${VITE_SERVER_PORT}
+      VITE_AUTH0_DOMAIN: ${VITE_AUTH0_DOMAIN}
+      VITE_AUTH0_CLIENT_ID: ${VITE_AUTH0_CLIENT_ID}
