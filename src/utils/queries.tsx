@@ -11,7 +11,7 @@ import Operations from './operations.ts';
 
 
 export const useSnippetsOperations = () => {
-  const {getAccessTokenSilently} = useAuth0()
+  const {user, getAccessTokenSilently} = useAuth0()
   const [token, setToken] = useState<string>("")
   
   useEffect(() => {
@@ -22,7 +22,7 @@ export const useSnippetsOperations = () => {
       .catch(error => console.error(error));
   });
 
-  const snippetOperations: SnippetOperations = new Operations(token);
+  const snippetOperations: SnippetOperations = new Operations(token, user ?? {});
 
   return snippetOperations
 }
