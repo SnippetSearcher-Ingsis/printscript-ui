@@ -36,7 +36,10 @@ jobs:
           else
             IMAGE_NAME=ghcr.io/snippetsearcher-ingsis/snippet-searcher-ui-dev
           fi
-          docker build -t $IMAGE_NAME:latest .
+          docker build \
+          --build-arg VITE_AUTH0_DOMAIN=${{ secrets.VITE_AUTH0_DOMAIN }} \
+          --build-arg VITE_AUTH0_CLIENT_ID=${{ secrets.VITE_AUTH0_CLIENT_ID }} \
+          -t $IMAGE_NAME:latest .
           docker push $IMAGE_NAME:latest
       
   update-container:
