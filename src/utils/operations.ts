@@ -12,8 +12,11 @@ import {
 import { SnippetOperations } from "./snippetOperations";
 import { PaginatedUsers } from "./users";
 import config from "./config";
+import { FakeSnippetOperations } from "./mock/fakeSnippetOperations";
 
 class Operations implements SnippetOperations {
+  private operations: SnippetOperations = new FakeSnippetOperations();
+
   constructor(private readonly token: string) {}
 
   listSnippetDescriptors(
@@ -21,76 +24,80 @@ class Operations implements SnippetOperations {
     pageSize: number,
     sippetName?: string | undefined
   ): Promise<PaginatedSnippets> {
-    throw new Error("Method not implemented.");
+    return this.operations.listSnippetDescriptors(page, pageSize, sippetName);
   }
   createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
     return new Promise((resolve, reject) => {
       axios
-        .post(`${config.apiUrl}/snippet`, JSON.stringify({
+        .post(
+          `${config.apiUrl}/snippet`,
+          JSON.stringify({
             title: createSnippet.name,
             content: createSnippet.content,
             language: createSnippet.language,
-        }), {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-            "Content-Type": "application/json",
-          },
-        })
+          }),
+          {
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
         .then((response) => resolve(response.data))
         .catch((error) => reject(error));
     });
   }
   getSnippetById(id: string): Promise<Snippet | undefined> {
-    throw new Error("Method not implemented.");
+    return this.operations.getSnippetById(id);
   }
   updateSnippetById(
     id: string,
     updateSnippet: UpdateSnippet
   ): Promise<Snippet> {
-    throw new Error("Method not implemented.");
+    return this.operations.updateSnippetById(id, updateSnippet);
   }
   getUserFriends(
     name?: string | undefined,
     page?: number | undefined,
     pageSize?: number | undefined
   ): Promise<PaginatedUsers> {
-    throw new Error("Method not implemented.");
+    return this.operations.getUserFriends(name, page, pageSize);
   }
   shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
-    throw new Error("Method not implemented.");
+    return this.operations.shareSnippet(snippetId, userId);
   }
   getFormatRules(): Promise<Rule[]> {
-    throw new Error("Method not implemented.");
+    return this.operations.getFormatRules();
   }
   getLintingRules(): Promise<Rule[]> {
-    throw new Error("Method not implemented.");
+    return this.operations.getLintingRules();
   }
   getTestCases(): Promise<TestCase[]> {
-    throw new Error("Method not implemented.");
+    return this.operations.getTestCases();
   }
   formatSnippet(snippet: string): Promise<string> {
-    throw new Error("Method not implemented.");
+    return this.operations.formatSnippet(snippet);
   }
   postTestCase(testCase: Partial<TestCase>): Promise<TestCase> {
-    throw new Error("Method not implemented.");
+    return this.operations.postTestCase(testCase);
   }
   removeTestCase(id: string): Promise<string> {
-    throw new Error("Method not implemented.");
+    return this.operations.removeTestCase(id);
   }
   deleteSnippet(id: string): Promise<string> {
-    throw new Error("Method not implemented.");
+    return this.operations.deleteSnippet(id);
   }
   testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
-    throw new Error("Method not implemented.");
+    return this.operations.testSnippet(testCase);
   }
   getFileTypes(): Promise<FileType[]> {
-    throw new Error("Method not implemented.");
+    return this.operations.getFileTypes();
   }
   modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
-    throw new Error("Method not implemented.");
+    return this.operations.modifyFormatRule(newRules);
   }
   modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
-    throw new Error("Method not implemented.");
+    return this.operations.modifyLintingRule(newRules);
   }
 }
 export default Operations;

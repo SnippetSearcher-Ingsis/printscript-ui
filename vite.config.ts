@@ -10,7 +10,6 @@ export default defineConfig(({ mode }) => {
       'process.env.BACKEND_URL': JSON.stringify(env.BACKEND_URL)
     },
     plugins: [react()],
-    base: "/",
     preview: {
       port: env.VITE_SERVER_PORT,
       host: true,
@@ -20,6 +19,11 @@ export default defineConfig(({ mode }) => {
       port: env.VITE_SERVER_PORT,
       host: true,
       cors: true,
+    },
+    build: {
+      minify: true,
+      sourcemap: false,
+      target: 'modules',
     },
   }
 })
