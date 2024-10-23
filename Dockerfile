@@ -1,6 +1,7 @@
 FROM oven/bun:alpine AS build
 ARG VITE_AUTH0_DOMAIN
 ARG VITE_AUTH0_CLIENT_ID
+ARG VITE_API_URL
 WORKDIR /app
 COPY bun.lockb .
 COPY package.json .
@@ -10,6 +11,7 @@ RUN bun install
 COPY . .
 RUN VITE_AUTH0_DOMAIN=$VITE_AUTH0_DOMAIN \
     VITE_AUTH0_CLIENT_ID=$VITE_AUTH0_CLIENT_ID \
+    VITE_API_URL=$VITE_API_URL \
     bun run build
 
 FROM nginx:alpine

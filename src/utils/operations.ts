@@ -13,18 +13,53 @@ import { SnippetOperations } from "./snippetOperations";
 import { PaginatedUsers } from "./users";
 import config from "./config";
 import { FakeSnippetOperations } from "./mock/fakeSnippetOperations";
+import { User } from "@auth0/auth0-react";
+
+const fakeSnippet = {} as Snippet;
 
 class Operations implements SnippetOperations {
   private operations: SnippetOperations = new FakeSnippetOperations();
 
-  constructor(private readonly token: string) {}
+  constructor(private readonly token: string, private readonly user: User) {}
 
   listSnippetDescriptors(
     page: number,
     pageSize: number,
     sippetName?: string | undefined
   ): Promise<PaginatedSnippets> {
-    return this.operations.listSnippetDescriptors(page, pageSize, sippetName);
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`${config.apiUrl}/snippet`, {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+          params: {
+            page,
+            page_size: pageSize,
+            name: sippetName,
+          },
+        })
+        .then((response) => {
+          const snippets: Snippet[] = response.data.map((snippet: any) => {
+            return {
+              id: snippet.id,
+              name: snippet.title,
+              content: snippet.content,
+              language: snippet.language,
+              extension: snippet.language,
+              compliance: "pending",
+              author: this.user.name ?? this.user.email ?? "Unknown User",
+            } as Snippet;
+          });
+          resolve({
+            snippets,
+            page: 1,
+            page_size: snippets.length,
+            count: snippets.length,
+          });
+        })
+        .catch((error) => reject(error));
+    });
   }
   createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
     return new Promise((resolve, reject) => {
@@ -43,18 +78,53 @@ class Operations implements SnippetOperations {
             },
           }
         )
-        .then((response) => resolve(response.data))
+        .then(() => resolve(fakeSnippet))
         .catch((error) => reject(error));
     });
   }
   getSnippetById(id: string): Promise<Snippet | undefined> {
-    return this.operations.getSnippetById(id);
+    return new Promise((resolve, reject) => {
+      axios
+        .get(`${config.apiUrl}/snippet/${id}`, {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        })
+        .then((response) =>
+          resolve({
+            id: response.data.id,
+            name: response.data.title,
+            author: this.user.name ?? this.user.email ?? "Unknown User",
+            compliance: "pending",
+            content: response.data.content,
+            extension: response.data.language,
+            language: response.data.language,
+          })
+        )
+        .catch((error) => reject(error));
+    });
   }
   updateSnippetById(
     id: string,
     updateSnippet: UpdateSnippet
   ): Promise<Snippet> {
-    return this.operations.updateSnippetById(id, updateSnippet);
+    return new Promise((resolve, reject) => {
+      axios
+        .patch(
+          `${config.apiUrl}/snippet/${id}`,
+          JSON.stringify({
+            content: updateSnippet.content,
+          }),
+          {
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        )
+        .then(() => resolve(fakeSnippet))
+        .catch((error) => reject(error));
+    });
   }
   getUserFriends(
     name?: string | undefined,
