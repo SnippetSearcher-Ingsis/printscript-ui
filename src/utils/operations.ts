@@ -14,6 +14,8 @@ import { PaginatedUsers } from "./users";
 import config from "./config";
 import { FakeSnippetOperations } from "./mock/fakeSnippetOperations";
 import { User } from "@auth0/auth0-react";
+import SnippetDTO from "../models/SnippetDTO";
+import CreateSnippetDTO from "../models/CreateSnippetDTO";
 
 const fakeSnippet = {} as Snippet;
 
@@ -40,17 +42,9 @@ class Operations implements SnippetOperations {
           },
         })
         .then((response) => {
-          const snippets: Snippet[] = response.data.map((snippet: any) => {
-            return {
-              id: snippet.id,
-              name: snippet.title,
-              content: snippet.content,
-              language: snippet.language,
-              extension: snippet.language,
-              compliance: "pending",
-              author: this.user.name ?? this.user.email ?? "Unknown User",
-            } as Snippet;
-          });
+          const snippets: Snippet[] = response.data.map((dto: SnippetDTO) =>
+            dto.toSnippet(this.user.nickname ?? "Unknown User")
+          );
           resolve({
             snippets,
             page: 1,
@@ -66,11 +60,7 @@ class Operations implements SnippetOperations {
       axios
         .post(
           `${config.apiUrl}/snippet`,
-          JSON.stringify({
-            title: createSnippet.name,
-            content: createSnippet.content,
-            language: createSnippet.language,
-          }),
+          JSON.stringify(CreateSnippetDTO.fromCreateSnippet(createSnippet)),
           {
             headers: {
               Authorization: `Bearer ${this.token}`,
@@ -91,15 +81,11 @@ class Operations implements SnippetOperations {
           },
         })
         .then((response) =>
-          resolve({
-            id: response.data.id,
-            name: response.data.title,
-            author: this.user.name ?? this.user.email ?? "Unknown User",
-            compliance: "pending",
-            content: response.data.content,
-            extension: response.data.language,
-            language: response.data.language,
-          })
+          resolve(
+            (response.data as SnippetDTO).toSnippet(
+              this.user.nickname ?? "Unknown User"
+            )
+          )
         )
         .catch((error) => reject(error));
     });
@@ -155,7 +141,16 @@ class Operations implements SnippetOperations {
     return this.operations.removeTestCase(id);
   }
   deleteSnippet(id: string): Promise<string> {
-    return this.operations.deleteSnippet(id);
+    return new Promise((resolve, reject) => {
+      axios
+        .delete(`${config.apiUrl}/snippet/${id}`, {
+          headers: {
+            Authorization: `Bearer ${this.token}`,
+          },
+        })
+        .then((response) => resolve(response.data))
+        .catch((error) => reject(error));
+    });
   }
   testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
     return this.operations.testSnippet(testCase);
