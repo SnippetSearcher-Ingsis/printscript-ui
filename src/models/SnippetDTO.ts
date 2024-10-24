@@ -9,13 +9,13 @@ class SnippetDTO {
     readonly compliance: string
   ) {}
 
-  toSnippet(nickname: string): Snippet {
+  static toSnippet(dto: SnippetDTO, nickname: string): Snippet {
     return {
-      id: this.id.toString(),
-      name: this.title,
-      content: this.content,
-      language: this.language,
-      extension: this.language,
+      id: dto.id.toString(),
+      name: dto.title,
+      content: dto.content,
+      language: dto.language,
+      extension: dto.language,
       compliance: "pending",
       author: nickname,
     } as Snippet;

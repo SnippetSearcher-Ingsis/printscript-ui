@@ -43,7 +43,7 @@ class Operations implements SnippetOperations {
         })
         .then((response) => {
           const snippets: Snippet[] = response.data.map((dto: SnippetDTO) =>
-            dto.toSnippet(this.user.nickname ?? "Unknown User")
+            SnippetDTO.toSnippet(dto, this.user.nickname ?? "Unknown User")
           );
           resolve({
             snippets,
@@ -82,7 +82,8 @@ class Operations implements SnippetOperations {
         })
         .then((response) =>
           resolve(
-            (response.data as SnippetDTO).toSnippet(
+            SnippetDTO.toSnippet(
+              response.data,
               this.user.nickname ?? "Unknown User"
             )
           )
