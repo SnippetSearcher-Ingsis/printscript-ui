@@ -31,7 +31,7 @@ class Operations implements SnippetOperations {
   ): Promise<PaginatedSnippets> {
     return new Promise((resolve, reject) => {
       axios
-        .get(`${config.apiUrl}/snippet`, {
+        .get(`${config.apiUrl}/snippet/`, {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },
@@ -59,7 +59,7 @@ class Operations implements SnippetOperations {
     return new Promise((resolve, reject) => {
       axios
         .post(
-          `${config.apiUrl}/snippet`,
+          `${config.apiUrl}/snippet/`,
           JSON.stringify(CreateSnippetDTO.fromCreateSnippet(createSnippet)),
           {
             headers: {
@@ -75,7 +75,7 @@ class Operations implements SnippetOperations {
   getSnippetById(id: string): Promise<Snippet | undefined> {
     return new Promise((resolve, reject) => {
       axios
-        .get(`${config.apiUrl}/snippet/${id}`, {
+        .get(`${config.apiUrl}/snippet/${id}/`, {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },
@@ -98,7 +98,7 @@ class Operations implements SnippetOperations {
     return new Promise((resolve, reject) => {
       axios
         .patch(
-          `${config.apiUrl}/snippet/${id}`,
+          `${config.apiUrl}/snippet/${id}/`,
           JSON.stringify({
             content: updateSnippet.content,
           }),
@@ -144,7 +144,7 @@ class Operations implements SnippetOperations {
   deleteSnippet(id: string): Promise<string> {
     return new Promise((resolve, reject) => {
       axios
-        .delete(`${config.apiUrl}/snippet/${id}`, {
+        .delete(`${config.apiUrl}/snippet/${id}/`, {
           headers: {
             Authorization: `Bearer ${this.token}`,
           },
