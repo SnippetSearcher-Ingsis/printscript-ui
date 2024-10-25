@@ -13,105 +13,103 @@ import { SnippetOperations } from "./snippetOperations";
 import { PaginatedUsers } from "./users";
 import config from "./config";
 import { FakeSnippetOperations } from "./mock/fakeSnippetOperations";
-import { User } from "@auth0/auth0-react";
+import { GetTokenSilentlyOptions, User } from "@auth0/auth0-react";
 import SnippetDTO from "../models/SnippetDTO";
 import CreateSnippetDTO from "../models/CreateSnippetDTO";
+import { GetTokenSilentlyVerboseResponse } from "@auth0/auth0-spa-js/dist/typings/global";
 
 const fakeSnippet = {} as Snippet;
+
+type getAccessTokenSilently = {
+  (
+    options: GetTokenSilentlyOptions & {
+      detailedResponse: true;
+    }
+  ): Promise<GetTokenSilentlyVerboseResponse>;
+  (options?: GetTokenSilentlyOptions): Promise<string>;
+  (options: GetTokenSilentlyOptions): Promise<
+    GetTokenSilentlyVerboseResponse | string
+  >;
+};
+
+const options = {
+  authorizationParams: {
+    audience: "https://snippet",
+  },
+};
 
 class Operations implements SnippetOperations {
   private operations: SnippetOperations = new FakeSnippetOperations();
 
-  constructor(private readonly token: string, private readonly user: User) {}
+  constructor(
+    private readonly getAccessTokenSilently: getAccessTokenSilently,
+    private readonly user: User
+  ) {}
 
-  listSnippetDescriptors(
-    page: number,
-    pageSize: number,
-    sippetName?: string | undefined
-  ): Promise<PaginatedSnippets> {
-    return new Promise((resolve, reject) => {
-      axios
-        .get(`${config.apiUrl}/snippet/`, {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-          },
-          params: {
-            page,
-            page_size: pageSize,
-            name: sippetName,
-          },
-        })
-        .then((response) => {
-          const snippets: Snippet[] = response.data.map((dto: SnippetDTO) =>
-            SnippetDTO.toSnippet(dto, this.user.nickname ?? "Unknown User")
-          );
-          resolve({
-            snippets,
-            page: 1,
-            page_size: snippets.length,
-            count: snippets.length,
-          });
-        })
-        .catch((error) => reject(error));
+  async listSnippetDescriptors(): Promise<PaginatedSnippets> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.get(`${config.apiUrl}/snippet/`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
+    const snippets: Snippet[] = response.data.map((dto: SnippetDTO) =>
+      SnippetDTO.toSnippet(dto, this.user.nickname ?? "Unknown User")
+    );
+    return {
+      snippets,
+      page: 1,
+      page_size: snippets.length,
+      count: snippets.length,
+    };
   }
-  createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
-    return new Promise((resolve, reject) => {
-      axios
-        .post(
-          `${config.apiUrl}/snippet/`,
-          JSON.stringify(CreateSnippetDTO.fromCreateSnippet(createSnippet)),
-          {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        )
-        .then(() => resolve(fakeSnippet))
-        .catch((error) => reject(error));
+  async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.post(
+      `${config.apiUrl}/snippet/`,
+      JSON.stringify({
+        ...CreateSnippetDTO.fromCreateSnippet(createSnippet),
+        user_name: this.user.nickname,
+      }),
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return fakeSnippet;
+  }
+  async getSnippetById(id: string): Promise<Snippet | undefined> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.get(`${config.apiUrl}/snippet/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
+    return SnippetDTO.toSnippet(
+      response.data,
+      this.user.nickname ?? "Unknown User"
+    );
   }
-  getSnippetById(id: string): Promise<Snippet | undefined> {
-    return new Promise((resolve, reject) => {
-      axios
-        .get(`${config.apiUrl}/snippet/${id}/`, {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-          },
-        })
-        .then((response) =>
-          resolve(
-            SnippetDTO.toSnippet(
-              response.data,
-              this.user.nickname ?? "Unknown User"
-            )
-          )
-        )
-        .catch((error) => reject(error));
-    });
-  }
-  updateSnippetById(
+  async updateSnippetById(
     id: string,
     updateSnippet: UpdateSnippet
   ): Promise<Snippet> {
-    return new Promise((resolve, reject) => {
-      axios
-        .patch(
-          `${config.apiUrl}/snippet/${id}/`,
-          JSON.stringify({
-            content: updateSnippet.content,
-          }),
-          {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        )
-        .then(() => resolve(fakeSnippet))
-        .catch((error) => reject(error));
-    });
+    const token = await this.getAccessTokenSilently(options);
+    await axios.patch(
+      `${config.apiUrl}/snippet/${id}`,
+      {
+        content: updateSnippet.content,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return fakeSnippet;
   }
   getUserFriends(
     name?: string | undefined,
@@ -141,17 +139,14 @@ class Operations implements SnippetOperations {
   removeTestCase(id: string): Promise<string> {
     return this.operations.removeTestCase(id);
   }
-  deleteSnippet(id: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      axios
-        .delete(`${config.apiUrl}/snippet/${id}/`, {
-          headers: {
-            Authorization: `Bearer ${this.token}`,
-          },
-        })
-        .then((response) => resolve(response.data))
-        .catch((error) => reject(error));
+  async deleteSnippet(id: string): Promise<string> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.delete(`${config.apiUrl}/snippet/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
+    return "deleted";
   }
   testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
     return this.operations.testSnippet(testCase);

@@ -6,24 +6,12 @@ import {TestCase} from "../types/TestCase.ts";
 import {FileType} from "../types/FileType.ts";
 import {Rule} from "../types/Rule.ts";
 import {useAuth0} from "@auth0/auth0-react";
-import {useEffect, useState} from "react";
 import Operations from './operations.ts';
 
 
 export const useSnippetsOperations = () => {
-  const {user, getAccessTokenSilently} = useAuth0()
-  const [token, setToken] = useState<string>("")
-  
-  useEffect(() => {
-    getAccessTokenSilently()
-      .then(token => {
-          setToken(token)
-      })
-      .catch(error => console.error(error));
-  });
-
-  const snippetOperations: SnippetOperations = new Operations(token, user ?? {});
-
+  const { user, getAccessTokenSilently } = useAuth0()
+  const snippetOperations: SnippetOperations = new Operations(getAccessTokenSilently, user ?? {});
   return snippetOperations
 }
 
