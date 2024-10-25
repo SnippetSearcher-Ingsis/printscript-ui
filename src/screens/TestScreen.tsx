@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import Grid2 from "@mui/material/Unstable_Grid2";
 import axios from "axios";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { options } from "../utils/operations";
 
 type Method = "get" | "post" | "put" | "patch" | "delete";
