@@ -162,3 +162,4 @@ class Operations implements SnippetOperations {
   }
 }
 export default Operations;
+export { options };

@@ -12,6 +12,7 @@ import {
 import Grid2 from "@mui/material/Unstable_Grid2";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
+import { options } from "../utils/operations";
 
 type Method = "get" | "post" | "put" | "patch" | "delete";
 const contentHeader = {
@@ -23,20 +24,12 @@ function TestScreen() {
   const body = useRef<HTMLInputElement>();
   const [method, setMethod] = useState<Method>("get");
   const { getAccessTokenSilently } = useAuth0();
-  const [token, setToken] = useState<string>("");
   const [response, setResponse] = useState<string | null>();
   const [loading, setLoading] = useState<boolean>(false);
 
-  useEffect(() => {
-    getAccessTokenSilently()
-      .then((token) => {
-        setToken(token);
-      })
-      .catch((error) => console.error(error));
-  });
-
-  function onClick() {
+  async function onClick() {
     setLoading(true);
+    const token = await getAccessTokenSilently(options);
     if (method === "get") {
       axios
         .get(url.current!.value, {
