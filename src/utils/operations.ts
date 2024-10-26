@@ -54,7 +54,7 @@ class Operations implements SnippetOperations {
       },
     });
     const snippets: Snippet[] = response.data.map((dto: SnippetDTO) =>
-      SnippetDTO.toSnippet(dto, this.user.nickname ?? "Unknown User")
+      SnippetDTO.toSnippet(dto)
     );
     return {
       snippets,
@@ -87,10 +87,7 @@ class Operations implements SnippetOperations {
         Authorization: `Bearer ${token}`,
       },
     });
-    return SnippetDTO.toSnippet(
-      response.data,
-      this.user.nickname ?? "Unknown User"
-    );
+    return SnippetDTO.toSnippet(response.data);
   }
   async updateSnippetById(
     id: string,
