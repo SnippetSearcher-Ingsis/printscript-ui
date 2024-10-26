@@ -25,5 +25,6 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       target: 'modules',
     },
+    base: env.VITE_BASE_PATH,
   }
 })
