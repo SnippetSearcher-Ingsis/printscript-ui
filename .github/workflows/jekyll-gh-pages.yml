@@ -28,6 +28,7 @@ jobs:
     env:
       VITE_AUTH0_DOMAIN: ${{ secrets.VITE_AUTH0_DOMAIN }}
       VITE_AUTH0_CLIENT_ID: ${{ secrets.VITE_AUTH0_CLIENT_ID }}
+      VITE_BASE_PATH: "/printscript-ui/"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
