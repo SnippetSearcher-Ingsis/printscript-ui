@@ -6,6 +6,7 @@ import {QueryClient, QueryClientProvider} from "react-query";
 import RulesScreen from "./screens/Rules.tsx";
 import { withAuthenticationRequired } from "@auth0/auth0-react";
 import { CircularProgress } from "@mui/material";
+import TestScreen from './screens/TestScreen.tsx';
 
 const router = createBrowserRouter([
     {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
     {
         path: '/rules',
         element: <RulesScreen/>
+  },
+  {
+    path: '/test',
+    element: <TestScreen />
     }
 ]);
 
