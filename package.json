@@ -18,7 +18,7 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@mui/icons-material": "^5.15.12",
-    "@mui/material": "^5.15.12",
+    "@mui/material": "^5.16.7",
     "@types/prismjs": "^1.26.3",
     "auto-bind": "^5.0.1",
     "axios": "^1.6.7",
@@ -27,7 +27,7 @@
     "prismajs": "^1.0.2",
     "prismjs": "^1.29.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0",
+    "react-dom": "^18.3.1",
     "react-query": "^3.39.3",
     "react-router-dom": "^6.22.3",
     "react-simple-code-editor": "^0.13.1",
@@ -35,7 +35,7 @@
   },
   "devDependencies": {
     "@types/react": "^18.2.56",
-    "@types/react-dom": "^18.2.19",
+    "@types/react-dom": "^18.3.1",
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
@@ -44,6 +44,6 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.14",
     "typescript": "^5.2.2",
-    "vite": "^5.1.4"
+    "vite": "^5.4.10"
   }
 }
