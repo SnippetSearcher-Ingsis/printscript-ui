@@ -114,15 +114,13 @@ class Operations implements SnippetOperations {
     page?: number | undefined,
     pageSize?: number | undefined
   ): Promise<PaginatedUsers> {
+    name;
     const token = await this.getAccessTokenSilently(options);
-    const response = await axios.get(
-      `${config.apiUrl}/snippet/friends/${this.user.nickname ?? name}`,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    const response = await axios.get(`${config.apiUrl}/snippet/friends`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
     const friends = response.data.map((friend: FriendDTO) =>
       FriendDTO.toUser(friend)
     );
@@ -133,8 +131,21 @@ class Operations implements SnippetOperations {
       count: friends.length,
     };
   }
-  shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
-    return this.operations.shareSnippet(snippetId, userId);
+  async shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.post(
+      `${config.apiUrl}/snippet/${snippetId}/share`,
+      {
+        friend_id: userId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return fakeSnippet;
   }
   getFormatRules(): Promise<Rule[]> {
     return this.operations.getFormatRules();
