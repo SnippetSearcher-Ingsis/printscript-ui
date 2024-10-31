@@ -17,6 +17,7 @@ import { GetTokenSilentlyOptions, User } from "@auth0/auth0-react";
 import SnippetDTO from "../models/SnippetDTO";
 import CreateSnippetDTO from "../models/CreateSnippetDTO";
 import { GetTokenSilentlyVerboseResponse } from "@auth0/auth0-spa-js/dist/typings/global";
+import FriendDTO from "../models/FriendDTO";
 
 const fakeSnippet = {} as Snippet;
 
@@ -108,15 +109,43 @@ class Operations implements SnippetOperations {
     );
     return fakeSnippet;
   }
-  getUserFriends(
+  async getUserFriends(
     name?: string | undefined,
     page?: number | undefined,
     pageSize?: number | undefined
   ): Promise<PaginatedUsers> {
-    return this.operations.getUserFriends(name, page, pageSize);
+    name;
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.get(`${config.apiUrl}/snippet/friends`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const friends = response.data.map((friend: FriendDTO) =>
+      FriendDTO.toUser(friend)
+    );
+    return {
+      users: friends,
+      page: page ?? 1,
+      page_size: pageSize ?? friends.length,
+      count: friends.length,
+    };
   }
-  shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
-    return this.operations.shareSnippet(snippetId, userId);
+  async shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.post(
+      `${config.apiUrl}/snippet/${snippetId}/share`,
+      {
+        friend_id: userId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return fakeSnippet;
   }
   getFormatRules(): Promise<Rule[]> {
     return this.operations.getFormatRules();
