@@ -47,21 +47,20 @@ class Operations implements SnippetOperations {
     private readonly user: User
   ) {}
 
-  async listSnippetDescriptors(): Promise<PaginatedSnippets> {
+  async listSnippetDescriptors(page:number, pageSize:number): Promise<PaginatedSnippets> {
     const token = await this.getAccessTokenSilently(options);
-    const response = await axios.get(`${config.apiUrl}/snippet/`, {
+    const response = await axios.get(`${config.apiUrl}/snippet/${page+1}/${pageSize}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
-    const snippets: Snippet[] = response.data.map((dto: SnippetDTO) =>
-      SnippetDTO.toSnippet(dto)
-    );
+    const pagination: PaginatedSnippets = response.data;
+    const snippets: Snippet[] = pagination.snippets;
     return {
       snippets,
-      page: 1,
-      page_size: snippets.length,
-      count: snippets.length,
+      page: pagination.page,
+      page_size: pagination.page_size,
+      count: pagination.count,
     };
   }
   async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
