@@ -47,13 +47,19 @@ class Operations implements SnippetOperations {
     private readonly user: User
   ) {}
 
-  async listSnippetDescriptors(page:number, pageSize:number): Promise<PaginatedSnippets> {
+  async listSnippetDescriptors(
+    page: number,
+    pageSize: number
+  ): Promise<PaginatedSnippets> {
     const token = await this.getAccessTokenSilently(options);
-    const response = await axios.get(`${config.apiUrl}/snippet/${page+1}/${pageSize}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      `${config.apiUrl}/snippet/${page + 1}/${pageSize}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     const pagination: PaginatedSnippets = response.data;
     const snippets: Snippet[] = pagination.snippets;
     return {
@@ -155,8 +161,18 @@ class Operations implements SnippetOperations {
   getTestCases(): Promise<TestCase[]> {
     return this.operations.getTestCases();
   }
-  formatSnippet(snippet: string): Promise<string> {
-    return this.operations.formatSnippet(snippet);
+  async formatSnippet(id: string): Promise<string> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.post(
+      `${config.apiUrl}/snippet/${id}/format`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   }
   postTestCase(testCase: Partial<TestCase>): Promise<TestCase> {
     return this.operations.postTestCase(testCase);

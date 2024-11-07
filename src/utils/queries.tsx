@@ -139,7 +139,7 @@ export const useFormatSnippet = () => {
   const snippetOperations = useSnippetsOperations()
 
   return useMutation<string, Error, string>(
-      snippetContent => snippetOperations.formatSnippet(snippetContent)
+      id => snippetOperations.formatSnippet(id)
   );
 }
 
