@@ -205,11 +205,33 @@ class Operations implements SnippetOperations {
   getFileTypes(): Promise<FileType[]> {
     return this.operations.getFileTypes();
   }
-  modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
-    return this.operations.modifyFormatRule(newRules);
+  async modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.put(
+      `${config.apiUrl}/configuration/format`,
+      JSON.stringify(newRules),
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return newRules;
   }
-  modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
-    return this.operations.modifyLintingRule(newRules);
+  async modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.put(
+      `${config.apiUrl}/configuration/lint`,
+      JSON.stringify(newRules),
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return newRules;
   }
 }
 export default Operations;
