@@ -10,8 +10,8 @@ import Operations from './operations.ts';
 
 
 export const useSnippetsOperations = () => {
-  const { user, getAccessTokenSilently } = useAuth0()
-  const snippetOperations: SnippetOperations = new Operations(getAccessTokenSilently, user ?? {});
+  const { getAccessTokenSilently } = useAuth0()
+  const snippetOperations: SnippetOperations = new Operations(getAccessTokenSilently);
   return snippetOperations
 }
 
