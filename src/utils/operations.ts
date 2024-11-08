@@ -13,10 +13,11 @@ import { SnippetOperations } from "./snippetOperations";
 import { PaginatedUsers } from "./users";
 import config from "./config";
 import { FakeSnippetOperations } from "./mock/fakeSnippetOperations";
-import { GetTokenSilentlyOptions, User } from "@auth0/auth0-react";
+import { GetTokenSilentlyOptions } from "@auth0/auth0-react";
 import SnippetDTO from "../models/SnippetDTO";
 import CreateSnippetDTO from "../models/CreateSnippetDTO";
 import { GetTokenSilentlyVerboseResponse } from "@auth0/auth0-spa-js/dist/typings/global";
+import FriendDTO from "../models/FriendDTO";
 
 const fakeSnippet = {} as Snippet;
 
@@ -42,34 +43,37 @@ class Operations implements SnippetOperations {
   private operations: SnippetOperations = new FakeSnippetOperations();
 
   constructor(
-    private readonly getAccessTokenSilently: getAccessTokenSilently,
-    private readonly user: User
+    private readonly getAccessTokenSilently: getAccessTokenSilently
   ) {}
 
-  async listSnippetDescriptors(): Promise<PaginatedSnippets> {
+  async listSnippetDescriptors(
+    page: number,
+    pageSize: number
+  ): Promise<PaginatedSnippets> {
     const token = await this.getAccessTokenSilently(options);
-    const response = await axios.get(`${config.apiUrl}/snippet/`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    const snippets: Snippet[] = response.data.map((dto: SnippetDTO) =>
-      SnippetDTO.toSnippet(dto)
+    const response = await axios.get(
+      `${config.apiUrl}/snippet/${page + 1}/${pageSize}`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
+    const pagination: PaginatedSnippets = response.data;
+    const snippets: Snippet[] = pagination.snippets;
     return {
       snippets,
-      page: 1,
-      page_size: snippets.length,
-      count: snippets.length,
+      page: pagination.page,
+      page_size: pagination.page_size,
+      count: pagination.count,
     };
   }
   async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
     const token = await this.getAccessTokenSilently(options);
     await axios.post(
-      `${config.apiUrl}/snippet/`,
+      `${config.apiUrl}/snippet`,
       JSON.stringify({
         ...CreateSnippetDTO.fromCreateSnippet(createSnippet),
-        user_name: this.user.nickname,
       }),
       {
         headers: {
@@ -108,27 +112,77 @@ class Operations implements SnippetOperations {
     );
     return fakeSnippet;
   }
-  getUserFriends(
+  async getUserFriends(
     name?: string | undefined,
     page?: number | undefined,
     pageSize?: number | undefined
   ): Promise<PaginatedUsers> {
-    return this.operations.getUserFriends(name, page, pageSize);
+    name;
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.get(`${config.apiUrl}/friends`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    const friends = response.data.map((friend: FriendDTO) =>
+      FriendDTO.toUser(friend)
+    );
+    return {
+      users: friends,
+      page: page ?? 1,
+      page_size: pageSize ?? friends.length,
+      count: friends.length,
+    };
   }
-  shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
-    return this.operations.shareSnippet(snippetId, userId);
+  async shareSnippet(snippetId: string, userId: string): Promise<Snippet> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.post(
+      `${config.apiUrl}/snippet/${snippetId}/share`,
+      {
+        friend_id: userId,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return fakeSnippet;
   }
-  getFormatRules(): Promise<Rule[]> {
-    return this.operations.getFormatRules();
+  async getFormatRules(): Promise<Rule[]> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.get(`${config.apiUrl}/configuration/format`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
   }
-  getLintingRules(): Promise<Rule[]> {
-    return this.operations.getLintingRules();
+  async getLintingRules(): Promise<Rule[]> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.get(`${config.apiUrl}/configuration/lint`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
   }
   getTestCases(): Promise<TestCase[]> {
     return this.operations.getTestCases();
   }
-  formatSnippet(snippet: string): Promise<string> {
-    return this.operations.formatSnippet(snippet);
+  async formatSnippet(id: string): Promise<string> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.post(
+      `${config.apiUrl}/snippet/${id}/format`,
+      null,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+    return response.data;
   }
   postTestCase(testCase: Partial<TestCase>): Promise<TestCase> {
     return this.operations.postTestCase(testCase);
@@ -151,11 +205,33 @@ class Operations implements SnippetOperations {
   getFileTypes(): Promise<FileType[]> {
     return this.operations.getFileTypes();
   }
-  modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
-    return this.operations.modifyFormatRule(newRules);
+  async modifyFormatRule(newRules: Rule[]): Promise<Rule[]> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.put(
+      `${config.apiUrl}/configuration/format`,
+      JSON.stringify(newRules),
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return newRules;
   }
-  modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
-    return this.operations.modifyLintingRule(newRules);
+  async modifyLintingRule(newRules: Rule[]): Promise<Rule[]> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.put(
+      `${config.apiUrl}/configuration/lint`,
+      JSON.stringify(newRules),
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    return newRules;
   }
 }
 export default Operations;

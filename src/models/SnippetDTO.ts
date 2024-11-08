@@ -17,7 +17,7 @@ class SnippetDTO {
       content: dto.content,
       language: dto.language,
       extension: dto.language,
-      compliance: "pending",
+      compliance: dto.compliance,
       author: dto.author,
     } as Snippet;
   }
