@@ -19,7 +19,7 @@
     "@mui/icons-material": "^5.16.7",
     "@emotion/styled": "^11.13.0",
     "@mui/material": "^5.16.7",
-    "@types/prismjs": "^1.26.3",
+    "@types/prismjs": "^1.26.5",
     "auto-bind": "^5.0.1",
     "axios": "^1.6.7",
     "cypress": "^13.8.1",
