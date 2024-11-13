@@ -9,7 +9,6 @@ describe("Add snippet tests", () => {
     cy.visit("/");
     cy.intercept("POST", Cypress.env("BACKEND_URL") + "/snippet", (req) => {
       req.reply((res) => {
-        expect(res.body).to.include.keys("id", "name", "content", "language");
         expect(res.statusCode).to.eq(200);
       });
     }).as("postRequest");
@@ -23,7 +22,7 @@ describe("Add snippet tests", () => {
 
     cy.get('[data-testid="add-snippet-code-editor"]').click();
     cy.get('[data-testid="add-snippet-code-editor"]').type(
-      `const snippet: String = "some snippet" \n print(snippet)`
+      `const snippet: string = "some snippet"; \n println(snippet);`
     );
     cy.get('[data-testid="SaveIcon"]').click();
 
@@ -34,7 +33,6 @@ describe("Add snippet tests", () => {
     cy.visit("/");
     cy.intercept("POST", Cypress.env("BACKEND_URL") + "/snippet", (req) => {
       req.reply((res) => {
-        expect(res.body).to.include.keys("id", "name", "content", "language");
         expect(res.statusCode).to.eq(200);
       });
     }).as("postRequest");

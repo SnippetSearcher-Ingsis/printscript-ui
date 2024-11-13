@@ -37,7 +37,7 @@ describe("Home", () => {
     cy.visit(Cypress.env("FRONTEND_URL"));
     const snippetData: CreateSnippet = {
       name: "Test name",
-      content: "print(1)",
+      content: "println(1);",
       language: "printscript",
       extension: ".ps",
     };
