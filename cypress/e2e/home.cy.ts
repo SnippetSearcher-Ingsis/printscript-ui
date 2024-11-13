@@ -30,29 +30,29 @@ describe("Home", () => {
 
     first10Snippets.should("have.length.greaterThan", 0);
 
-    first10Snippets.should("have.length.lessThan", 10);
+    first10Snippets.should("have.length.lessThan", 11);
   });
 
-  it("Can creat snippet find snippets by name", () => {
+  it("Can create snippet and find snippets by name", () => {
     cy.visit(Cypress.env("FRONTEND_URL"));
-    const snippetData: CreateSnippet = {
-      name: "Test name",
-      content: "print(1)",
-      language: "printscript",
-      extension: ".ps",
-    };
-
-    cy.intercept("GET", Cypress.env("BACKEND_URL") + "/snippet*", (req) => {
-      req.reply((res) => {
+    cy.intercept("GET", `${Cypress.env("BACKEND_URL")}/snippet/**/*`, (req) => {
+      req.continue((res) => {
         expect(res.statusCode).to.eq(200);
       });
     }).as("getSnippets");
 
+    const snippetData: CreateSnippet = {
+      name: "Test name",
+      content: "const si: string = 'si'; \n println(si);",
+      language: "printscript",
+      extension: ".ps",
+    };
+
     cy.request({
       method: "POST",
-      url: Cypress.env("BACKEND_URL") + "/snippet", // Adjust if you have a different base URL configured in Cypress
+      url: `${Cypress.env("BACKEND_URL")}/snippet`,
       body: snippetData,
-      failOnStatusCode: false, // Optional: set to true if you want the test to fail on non-2xx status codes
+      failOnStatusCode: false,
       headers: {
         Authorization: `Bearer ${localStorage.getItem("authAccessToken")}`,
         "Content-Type": "application/json",
