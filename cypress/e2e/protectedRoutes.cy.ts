@@ -3,19 +3,13 @@ describe("Protected routes test", () => {
     // Visit the protected route
     cy.visit("/");
 
-    cy.wait(1000);
-
     // Check if the URL is redirected to the login page
-    cy.url().should("include", "/login");
-  });
-
-  it("should display login content", () => {
-    // Visit the login page
-    cy.visit("/login");
-
-    // Look for text that is likely to appear on a login page
-    cy.contains("Log in").should("exist");
-    cy.contains("Password").should("exist"); // Adjust the text based on actual content
+    cy.origin("https://dev-7zn033qnk8llytib.us.auth0.com", () => {
+      // Assert that the Auth0 login page is displayed
+      cy.contains("Log in").should("exist");
+      cy.get('input[name="username"]').should("exist");
+      cy.get('input[name="password"]').should("exist");
+    });
   });
 
   it("should not redirect to login when the user is already authenticated", () => {
@@ -29,6 +23,6 @@ describe("Protected routes test", () => {
     cy.wait(1000);
 
     // Check if the URL is redirected to the login page
-    cy.url().should("not.include", "/login");
+    cy.url().should("not.include", "dev-7zn033qnk8llytib.us.auth0.com");
   });
 });
