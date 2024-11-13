@@ -30,10 +30,16 @@ describe("Home", () => {
 
     first10Snippets.should("have.length.greaterThan", 0);
 
-    first10Snippets.should("have.length.lessThan", 10);
+    first10Snippets.should("have.length.lessThan", 11);
   });
 
   it("Can creat snippet find snippets by name", () => {
+    cy.intercept("GET", `${Cypress.env("BACKEND_URL")}/snippet*`, (req) => {
+      req.reply((res) => {
+        expect(res.statusCode).to.eq(200);
+      });
+    }).as("getSnippets");
+
     cy.visit(Cypress.env("FRONTEND_URL"));
     const snippetData: CreateSnippet = {
       name: "Test name",
@@ -41,12 +47,6 @@ describe("Home", () => {
       language: "printscript",
       extension: ".ps",
     };
-
-    cy.intercept("GET", Cypress.env("BACKEND_URL") + "/snippet*", (req) => {
-      req.reply((res) => {
-        expect(res.statusCode).to.eq(200);
-      });
-    }).as("getSnippets");
 
     cy.request({
       method: "POST",

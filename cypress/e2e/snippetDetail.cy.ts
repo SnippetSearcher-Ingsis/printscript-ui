@@ -1,24 +1,23 @@
-import { FakeSnippetStore } from "../../src/utils/mock/fakeSnippetStore";
-
 describe("Add snippet tests", () => {
-  const fakeStore = new FakeSnippetStore();
   beforeEach(() => {
     cy.loginToAuth0(
       Cypress.env("AUTH0_USERNAME"),
       Cypress.env("AUTH0_PASSWORD")
     );
-    cy.intercept("GET", Cypress.env("BACKEND_URL") + "/snippet/*", {
-      statusCode: 201,
-      body: fakeStore.getSnippetById("1"),
+    cy.intercept("GET", Cypress.env("BACKEND_URL") + "/snippet/**/*", (req) => {
+      req.continue((res) => {
+        expect(res.statusCode).to.eq(200);
+      });
     }).as("getSnippetById");
-    cy.intercept("GET", Cypress.env("BACKEND_URL") + "/snippets").as(
-      "getSnippets"
-    );
+    cy.intercept("GET", Cypress.env("BACKEND_URL") + "/snippet/**/*", (req) => {
+      req.continue((res) => {
+        expect(res.statusCode).to.eq(200);
+      });
+    }).as("getSnippets");
 
     cy.visit("/");
 
-    // cy.wait("@getSnippets")
-    cy.wait(2000); // TODO comment this line and uncomment 19 to wait for the real data
+    cy.wait("@getSnippets");
     cy.get(".MuiTableBody-root > :nth-child(1) > :nth-child(1)").click();
   });
 

@@ -7,8 +7,8 @@ describe("Add snippet tests", () => {
   });
   it("Can add snippets manually", () => {
     cy.visit("/");
-    cy.intercept("POST", Cypress.env("BACKEND_URL") + "/snippet", (req) => {
-      req.reply((res) => {
+    cy.intercept("POST", `${Cypress.env("BACKEND_URL")}/snippet`, (req) => {
+      req.continue((res) => {
         expect(res.statusCode).to.eq(200);
       });
     }).as("postRequest");
@@ -31,13 +31,14 @@ describe("Add snippet tests", () => {
 
   it("Can add snippets via file", () => {
     cy.visit("/");
-    cy.intercept("POST", Cypress.env("BACKEND_URL") + "/snippet", (req) => {
-      req.reply((res) => {
+    cy.intercept("POST", `${Cypress.env("BACKEND_URL")}/snippet`, (req) => {
+      req.continue((res) => {
         expect(res.statusCode).to.eq(200);
       });
     }).as("postRequest");
 
     /* ==== Generated with Cypress Studio ==== */
+    cy.wait(5000);
     cy.get('[data-testid="upload-file-input"').selectFile(
       "cypress/fixtures/example_ps.ps",
       { force: true }
