@@ -194,7 +194,7 @@ class Operations implements SnippetOperations {
     const token = await this.getAccessTokenSilently(options);
     const response = await axios.put(
         `${config.apiUrl}/snippet/${snippetId}/test`,
-        {...testCase, id: 0},
+        {...testCase, input: testCase.input ?? [], output: testCase.output ?? []},
         {
           headers: {
             Authorization: `Bearer ${token}`,
