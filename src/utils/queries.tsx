@@ -63,28 +63,30 @@ export const useShareSnippet = () => {
 };
 
 
-export const useGetTestCases = () => {
-  const snippetOperations = useSnippetsOperations()
+export const useGetTestCases = (snippetId: string) => {
+  const snippetOperations = useSnippetsOperations();
 
-  return useQuery<TestCase[] | undefined, Error>(['testCases'], () => snippetOperations.getTestCases(), {});
-};
-
-
-export const usePostTestCase = () => {
-  const snippetOperations = useSnippetsOperations()
-
-  return useMutation<TestCase, Error, Partial<TestCase>>(
-      (tc) => snippetOperations.postTestCase(tc)
+  return useQuery<TestCase[] | undefined, Error>(
+      ['testCases', snippetId],
+      () => snippetOperations.getTestCases(snippetId),
+      {}
   );
 };
 
+export const usePostTestCase = () => {
+  const snippetOperations = useSnippetsOperations();
 
-export const useRemoveTestCase = ({onSuccess}: {onSuccess: () => void}) => {
-  const snippetOperations = useSnippetsOperations()
+  return useMutation<TestCase, Error, { testCase: Partial<TestCase>, snippetId: string }>(
+      ({ testCase, snippetId }) => snippetOperations.postTestCase(testCase, snippetId)
+  );
+};
 
-  return useMutation<string, Error, string>(
+export const useRemoveTestCase = ({ onSuccess }: { onSuccess: () => void }) => {
+  const snippetOperations = useSnippetsOperations();
+
+  return useMutation<string, Error, { id: string; snippetId: string }>(
       ['removeTestCase'],
-      (id) => snippetOperations.removeTestCase(id),
+      ({ id, snippetId }) => snippetOperations.removeTestCase(id, snippetId),
       {
         onSuccess,
       }
@@ -96,12 +98,10 @@ export type TestCaseResult = "success" | "fail"
 export const useTestSnippet = () => {
   const snippetOperations = useSnippetsOperations()
 
-  return useMutation<TestCaseResult, Error, Partial<TestCase>>(
-      (tc) => snippetOperations.testSnippet(tc)
+  return useMutation<TestCaseResult, Error, {testCase: Partial<TestCase>, snippetId: string}>(
+      (tc) => snippetOperations.testSnippet(tc.testCase, tc.snippetId)
   )
 }
-
-
 
 export const useGetFormatRules = () => {
   const snippetOperations = useSnippetsOperations()
