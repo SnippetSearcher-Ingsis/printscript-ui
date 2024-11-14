@@ -168,8 +168,14 @@ class Operations implements SnippetOperations {
     });
     return response.data;
   }
-  getTestCases(): Promise<TestCase[]> {
-    return this.operations.getTestCases();
+  async getTestCases(snippetId: string): Promise<TestCase[]> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.get(`${config.apiUrl}/snippet/${snippetId}/test`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
   }
   async formatSnippet(id: string): Promise<string> {
     const token = await this.getAccessTokenSilently(options);
@@ -184,11 +190,27 @@ class Operations implements SnippetOperations {
     );
     return response.data;
   }
-  postTestCase(testCase: Partial<TestCase>): Promise<TestCase> {
-    return this.operations.postTestCase(testCase);
+  async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestCase> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.put(
+        `${config.apiUrl}/snippet/${snippetId}/test`,
+        {...testCase, id: 0},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+    );
+    return response.data;
   }
-  removeTestCase(id: string): Promise<string> {
-    return this.operations.removeTestCase(id);
+  async removeTestCase(id: string, snippetId: string): Promise<string> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.delete(`${config.apiUrl}/snippet/${snippetId}/test/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return "deleted";
   }
   async deleteSnippet(id: string): Promise<string> {
     const token = await this.getAccessTokenSilently(options);
@@ -199,8 +221,18 @@ class Operations implements SnippetOperations {
     });
     return "deleted";
   }
-  testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
-    return this.operations.testSnippet(testCase);
+  async testSnippet(testCase: Partial<TestCase>, snippetId: string): Promise<TestCaseResult> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.post(
+        `${config.apiUrl}/snippet/${snippetId}/test/execute`,
+        {...testCase, input: testCase.input ?? [], output: testCase.output ?? []},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+    );
+    return response.data ? "success" : "fail";
   }
   getFileTypes(): Promise<FileType[]> {
     return this.operations.getFileTypes();
