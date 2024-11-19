@@ -15,7 +15,6 @@ import config from "./config";
 import { FakeSnippetOperations } from "./mock/fakeSnippetOperations";
 import { GetTokenSilentlyOptions } from "@auth0/auth0-react";
 import SnippetDTO from "../models/SnippetDTO";
-import CreateSnippetDTO from "../models/CreateSnippetDTO";
 import { GetTokenSilentlyVerboseResponse } from "@auth0/auth0-spa-js/dist/typings/global";
 import FriendDTO from "../models/FriendDTO";
 
@@ -70,11 +69,20 @@ class Operations implements SnippetOperations {
   }
   async createSnippet(createSnippet: CreateSnippet): Promise<Snippet> {
     const token = await this.getAccessTokenSilently(options);
+    const match = createSnippet.language.match(/^(\w+)\s*([\d.]+)?$/);
+    let version: string | null = null
+    if (match) {
+      version = match[2]
+    }
     await axios.post(
       `${config.apiUrl}/snippet`,
-      JSON.stringify({
-        ...CreateSnippetDTO.fromCreateSnippet(createSnippet),
-      }),
+        {
+          name: createSnippet.name,
+          content: createSnippet.content,
+          version: version,
+          language: createSnippet.language,
+          extension: createSnippet.extension,
+        },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -168,8 +176,15 @@ class Operations implements SnippetOperations {
     });
     return response.data;
   }
-  getTestCases(): Promise<TestCase[]> {
-    return this.operations.getTestCases();
+  async getTestCases(snippetId: string): Promise<TestCase[]> {
+    const token = await this.getAccessTokenSilently(options);
+    if (snippetId.length === 0) { return []; }
+    const response = await axios.get(`${config.apiUrl}/snippet/${snippetId}/test`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
   }
   async formatSnippet(id: string): Promise<string> {
     const token = await this.getAccessTokenSilently(options);
@@ -184,11 +199,27 @@ class Operations implements SnippetOperations {
     );
     return response.data;
   }
-  postTestCase(testCase: Partial<TestCase>): Promise<TestCase> {
-    return this.operations.postTestCase(testCase);
+  async postTestCase(testCase: Partial<TestCase>, snippetId: string): Promise<TestCase> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.put(
+        `${config.apiUrl}/snippet/${snippetId}/test`,
+        {...testCase, input: testCase.input ?? [], output: testCase.output ?? []},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+    );
+    return response.data;
   }
-  removeTestCase(id: string): Promise<string> {
-    return this.operations.removeTestCase(id);
+  async removeTestCase(id: string, snippetId: string): Promise<string> {
+    const token = await this.getAccessTokenSilently(options);
+    await axios.delete(`${config.apiUrl}/snippet/${snippetId}/test/${id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return "deleted";
   }
   async deleteSnippet(id: string): Promise<string> {
     const token = await this.getAccessTokenSilently(options);
@@ -199,8 +230,18 @@ class Operations implements SnippetOperations {
     });
     return "deleted";
   }
-  testSnippet(testCase: Partial<TestCase>): Promise<TestCaseResult> {
-    return this.operations.testSnippet(testCase);
+  async testSnippet(testCase: Partial<TestCase>, snippetId: string): Promise<TestCaseResult> {
+    const token = await this.getAccessTokenSilently(options);
+    const response = await axios.post(
+        `${config.apiUrl}/snippet/${snippetId}/test/execute`,
+        {...testCase, input: testCase.input ?? [], output: testCase.output ?? []},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+    );
+    return response.data ? "success" : "fail";
   }
   getFileTypes(): Promise<FileType[]> {
     return this.operations.getFileTypes();
